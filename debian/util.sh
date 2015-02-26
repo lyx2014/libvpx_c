@@ -4,7 +4,7 @@ if [ $# -eq 1 ]; then
 	CHANGELOG=/tmp/changelog.tmp.$$
 
 	cat >> $CHANGELOG << EOF
-libvpx (1.1.0-$1) unstable; urgency=low
+libvpx (1.3.0-`date +%Y%m%d%H%M%S`-$1) unstable; urgency=low
 
   * AutoBuild Revision Update
 
