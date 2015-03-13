@@ -610,6 +610,9 @@ int main(int argc, char **argv) {
   cfg.rc_buf_optimal_sz = 600;
   cfg.rc_buf_sz = 1000;
 
+  // Use 1 thread as default.
+  cfg.g_threads = 1;
+
   // Enable error resilient mode.
   cfg.g_error_resilient = 1;
   cfg.g_lag_in_frames   = 0;
@@ -674,7 +677,8 @@ int main(int argc, char **argv) {
       vpx_codec_control(&codec, VP9E_SET_AQ_MODE, 3);
       vpx_codec_control(&codec, VP9E_SET_FRAME_PERIODIC_BOOST, 0);
       vpx_codec_control(&codec, VP9E_SET_NOISE_SENSITIVITY, 0);
-      vpx_codec_control(&codec, VP8E_SET_STATIC_THRESHOLD, 0);
+      vpx_codec_control(&codec, VP8E_SET_STATIC_THRESHOLD, 1);
+      vpx_codec_control(&codec, VP9E_SET_TILE_COLUMNS, (cfg.g_threads >> 1));
       if (vpx_codec_control(&codec, VP9E_SET_SVC, layering_mode > 0 ? 1: 0)) {
         die_codec(&codec, "Failed to set SVC");
     }
@@ -708,6 +712,8 @@ int main(int argc, char **argv) {
                         layer_id.temporal_layer_id);
     }
     flags = layer_flags[frame_cnt % flag_periodicity];
+    if (layering_mode == 0)
+      flags = 0;
     frame_avail = vpx_img_read(&raw, infile);
     if (frame_avail)
       ++rc.layer_input_frames[layer_id.temporal_layer_id];

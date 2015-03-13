@@ -51,7 +51,7 @@ static struct vp9_extracfg default_extra_cfg = {
   0,                          // noise_sensitivity
   0,                          // sharpness
   0,                          // static_thresh
-  0,                          // tile_columns
+  6,                          // tile_columns
   0,                          // tile_rows
   7,                          // arnr_max_frames
   5,                          // arnr_strength
@@ -61,7 +61,7 @@ static struct vp9_extracfg default_extra_cfg = {
   0,                          // rc_max_inter_bitrate_pct
   0,                          // gf_cbr_boost_pct
   0,                          // lossless
-  0,                          // frame_parallel_decoding_mode
+  1,                          // frame_parallel_decoding_mode
   NO_AQ,                      // aq_mode
   0,                          // frame_periodic_delta_q
   VPX_BITS_8,                 // Bit depth
@@ -158,8 +158,8 @@ static vpx_codec_err_t validate_config(vpx_codec_alg_priv_t *ctx,
   RANGE_CHECK_HI(cfg, g_threads,          64);
   RANGE_CHECK_HI(cfg, g_lag_in_frames,    MAX_LAG_BUFFERS);
   RANGE_CHECK(cfg, rc_end_usage,          VPX_VBR, VPX_Q);
-  RANGE_CHECK_HI(cfg, rc_undershoot_pct,  1000);
-  RANGE_CHECK_HI(cfg, rc_overshoot_pct,   1000);
+  RANGE_CHECK_HI(cfg, rc_undershoot_pct,  100);
+  RANGE_CHECK_HI(cfg, rc_overshoot_pct,   100);
   RANGE_CHECK_HI(cfg, rc_2pass_vbr_bias_pct, 100);
   RANGE_CHECK(cfg, kf_mode,               VPX_KF_DISABLED, VPX_KF_AUTO);
   RANGE_CHECK_BOOL(cfg,                   rc_resize_allowed);
@@ -550,6 +550,8 @@ static vpx_codec_err_t encoder_set_config(vpx_codec_alg_priv_t *ctx,
   if (res == VPX_CODEC_OK) {
     ctx->cfg = *cfg;
     set_encoder_config(&ctx->oxcf, &ctx->cfg, &ctx->extra_cfg);
+    // On profile change, request a key frame
+    force_key |= ctx->cpi->common.profile != ctx->oxcf.profile;
     vp9_change_config(ctx->cpi, &ctx->oxcf);
   }
 
@@ -692,7 +694,7 @@ static vpx_codec_err_t ctrl_set_rc_gf_cbr_boost_pct(
     vpx_codec_alg_priv_t *ctx, va_list args) {
   struct vp9_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.gf_cbr_boost_pct =
-      CAST(VP8E_SET_GF_CBR_BOOST_PCT, args);
+      CAST(VP9E_SET_GF_CBR_BOOST_PCT, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1385,7 +1387,7 @@ static vpx_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   {VP8E_SET_CQ_LEVEL,                 ctrl_set_cq_level},
   {VP8E_SET_MAX_INTRA_BITRATE_PCT,    ctrl_set_rc_max_intra_bitrate_pct},
   {VP8E_SET_MAX_INTER_BITRATE_PCT,    ctrl_set_rc_max_inter_bitrate_pct},
-  {VP8E_SET_GF_CBR_BOOST_PCT,         ctrl_set_rc_gf_cbr_boost_pct},
+  {VP9E_SET_GF_CBR_BOOST_PCT,         ctrl_set_rc_gf_cbr_boost_pct},
   {VP9E_SET_LOSSLESS,                 ctrl_set_lossless},
   {VP9E_SET_FRAME_PARALLEL_DECODING,  ctrl_set_frame_parallel_decoding_mode},
   {VP9E_SET_AQ_MODE,                  ctrl_set_aq_mode},
@@ -1412,7 +1414,7 @@ static vpx_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
     0,
     {  // NOLINT
       0,                  // g_usage
-      0,                  // g_threads
+      8,                  // g_threads
       0,                  // g_profile
 
       320,                // g_width
@@ -1443,8 +1445,8 @@ static vpx_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
       256,                // rc_target_bandwidth
       0,                  // rc_min_quantizer
       63,                 // rc_max_quantizer
-      100,                // rc_undershoot_pct
-      100,                // rc_overshoot_pct
+      25,                 // rc_undershoot_pct
+      25,                 // rc_overshoot_pct
 
       6000,               // rc_max_buffer_size
       4000,               // rc_buffer_initial_size

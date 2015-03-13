@@ -18,6 +18,18 @@
 extern "C" {
 #endif
 
+// The segment ids used in cyclic refresh: from base (no boost) to increasing
+// boost (higher delta-qp).
+#define CR_SEGMENT_ID_BASE    0
+#define CR_SEGMENT_ID_BOOST1  1
+#define CR_SEGMENT_ID_BOOST2  2
+
+// Maximum rate target ratio for setting segment delta-qp.
+#define CR_MAX_RATE_TARGET_RATIO 4.0
+
+// Boost factor for rate target ratio, for segment CR_SEGMENT_ID_BOOST2.
+#define CR_BOOST2_FAC 1.7
+
 struct VP9_COMP;
 
 struct CYCLIC_REFRESH;
@@ -50,7 +62,13 @@ void vp9_cyclic_refresh_update_segment(struct VP9_COMP *const cpi,
 void vp9_cyclic_refresh_update__map(struct VP9_COMP *const cpi);
 
 // Update the actual number of blocks that were applied the segment delta q.
-void vp9_cyclic_refresh_update_actual_count(struct VP9_COMP *const cpi);
+void vp9_cyclic_refresh_postencode(struct VP9_COMP *const cpi);
+
+// Set golden frame update interval, for non-svc 1 pass CBR mode.
+void vp9_cyclic_refresh_set_golden_update(struct VP9_COMP *const cpi);
+
+// Check if we should not update golden reference, based on past refresh stats.
+void vp9_cyclic_refresh_check_golden_update(struct VP9_COMP *const cpi);
 
 // Set/update global/frame level refresh parameters.
 void vp9_cyclic_refresh_update_parameters(struct VP9_COMP *const cpi);
@@ -59,6 +77,11 @@ void vp9_cyclic_refresh_update_parameters(struct VP9_COMP *const cpi);
 void vp9_cyclic_refresh_setup(struct VP9_COMP *const cpi);
 
 int vp9_cyclic_refresh_get_rdmult(const CYCLIC_REFRESH *cr);
+
+static INLINE int cyclic_refresh_segment_id_boosted(int segment_id) {
+  return segment_id == CR_SEGMENT_ID_BOOST1 ||
+         segment_id == CR_SEGMENT_ID_BOOST2;
+}
 
 #ifdef __cplusplus
 }  // extern "C"

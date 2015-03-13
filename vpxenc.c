@@ -457,7 +457,7 @@ static const int vp9_arg_ctrl_map[] = {
   VP9E_SET_TILE_COLUMNS, VP9E_SET_TILE_ROWS,
   VP8E_SET_ARNR_MAXFRAMES, VP8E_SET_ARNR_STRENGTH, VP8E_SET_ARNR_TYPE,
   VP8E_SET_TUNING, VP8E_SET_CQ_LEVEL, VP8E_SET_MAX_INTRA_BITRATE_PCT,
-  VP8E_SET_MAX_INTER_BITRATE_PCT, VP8E_SET_GF_CBR_BOOST_PCT,
+  VP8E_SET_MAX_INTER_BITRATE_PCT, VP9E_SET_GF_CBR_BOOST_PCT,
   VP9E_SET_LOSSLESS, VP9E_SET_FRAME_PARALLEL_DECODING, VP9E_SET_AQ_MODE,
   VP9E_SET_FRAME_PERIODIC_BOOST, VP9E_SET_NOISE_SENSITIVITY,
   VP9E_SET_TUNE_CONTENT, VP9E_SET_COLOR_SPACE,
@@ -1068,8 +1068,7 @@ static int parse_stream_params(struct VpxEncoderConfig *global,
       continue;
     }
 
-    if (0) {
-    } else if (arg_match(&arg, &outputfile, argi)) {
+    if (arg_match(&arg, &outputfile, argi)) {
       config->out_fn = arg.val;
     } else if (arg_match(&arg, &fpf_name, argi)) {
       config->stats_fn = arg.val;

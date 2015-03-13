@@ -153,7 +153,7 @@ static void loop_filter_rows_mt(YV12_BUFFER_CONFIG *frame,
   const int num_workers = MIN(nworkers, tile_cols);
   int i;
 
-  if (!lf_sync->sync_range || cm->last_height != cm->height ||
+  if (!lf_sync->sync_range || sb_rows != lf_sync->rows ||
       num_workers > lf_sync->num_workers) {
     vp9_loop_filter_dealloc(lf_sync);
     vp9_loop_filter_alloc(lf_sync, cm, sb_rows, cm->width, num_workers);
@@ -381,6 +381,9 @@ void vp9_accumulate_frame_counts(VP9_COMMON *cm, FRAME_COUNTS *counts,
     for (j = 0; j < TX_SIZES - 2; j++)
       cm->counts.tx.p8x8[i][j] += counts->tx.p8x8[i][j];
   }
+
+  for (i = 0; i < TX_SIZES; i++)
+    cm->counts.tx.tx_totals[i] += counts->tx.tx_totals[i];
 
   for (i = 0; i < SKIP_CONTEXTS; i++)
     for (j = 0; j < 2; j++)
