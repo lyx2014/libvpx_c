@@ -1783,8 +1783,8 @@ static int vector_match(int16_t *ref, int16_t *src, int bwl) {
   return (center - (bw >> 1));
 }
 
-static const MV search_pos[5] = {
-    {-1, 0}, {0, -1}, {0, 0}, {0, 1}, {1, 0},
+static const MV search_pos[4] = {
+    {-1, 0}, {0, -1}, {0, 1}, {1, 0},
 };
 
 unsigned int vp9_int_pro_motion_estimation(const VP9_COMP *cpi, MACROBLOCK *x,
@@ -1803,8 +1803,9 @@ unsigned int vp9_int_pro_motion_estimation(const VP9_COMP *cpi, MACROBLOCK *x,
   const int ref_stride = xd->plane[0].pre[0].stride;
   uint8_t const *ref_buf, *src_buf;
   MV *tmp_mv = &xd->mi[0].src_mi->mbmi.mv[0].as_mv;
-  int best_sad, tmp_sad, this_sad[5];
+  unsigned int best_sad, tmp_sad, this_sad[4];
   MV this_mv;
+  const int norm_factor = 3 + (bw >> 5);
 
 #if CONFIG_VP9_HIGHBITDEPTH
   tmp_mv->row = 0;
@@ -1822,7 +1823,7 @@ unsigned int vp9_int_pro_motion_estimation(const VP9_COMP *cpi, MACROBLOCK *x,
 
   ref_buf = xd->plane[0].pre[0].buf - (bh >> 1) * ref_stride;
   for (idx = 0; idx < search_height; ++idx) {
-    vbuf[idx] = vp9_int_pro_col(ref_buf, bw);
+    vbuf[idx] = vp9_int_pro_col(ref_buf, bw) >> norm_factor;
     ref_buf += ref_stride;
   }
 
@@ -1834,7 +1835,7 @@ unsigned int vp9_int_pro_motion_estimation(const VP9_COMP *cpi, MACROBLOCK *x,
 
   src_buf = x->plane[0].src.buf;
   for (idx = 0; idx < bh; ++idx) {
-    src_vbuf[idx] = vp9_int_pro_col(src_buf, bw);
+    src_vbuf[idx] = vp9_int_pro_col(src_buf, bw) >> norm_factor;
     src_buf += src_stride;
   }
 
@@ -1842,16 +1843,23 @@ unsigned int vp9_int_pro_motion_estimation(const VP9_COMP *cpi, MACROBLOCK *x,
   tmp_mv->col = vector_match(hbuf, src_hbuf, b_width_log2_lookup[bsize]);
   tmp_mv->row = vector_match(vbuf, src_vbuf, b_height_log2_lookup[bsize]);
 
-  best_sad = INT_MAX;
   this_mv = *tmp_mv;
   src_buf = x->plane[0].src.buf;
-  for (idx = 0; idx < 5; ++idx) {
-    ref_buf = xd->plane[0].pre[0].buf +
-        (search_pos[idx].row + this_mv.row) * ref_stride +
-        (search_pos[idx].col + this_mv.col);
+  ref_buf = xd->plane[0].pre[0].buf + this_mv.row * ref_stride + this_mv.col;
+  best_sad = cpi->fn_ptr[bsize].sdf(src_buf, src_stride, ref_buf, ref_stride);
 
-    this_sad[idx] = cpi->fn_ptr[bsize].sdf(src_buf, src_stride,
-                                           ref_buf, ref_stride);
+  {
+    const uint8_t * const pos[4] = {
+        ref_buf - ref_stride,
+        ref_buf - 1,
+        ref_buf + 1,
+        ref_buf + ref_stride,
+    };
+
+    cpi->fn_ptr[bsize].sdx4df(src_buf, src_stride, pos, ref_stride, this_sad);
+  }
+
+  for (idx = 0; idx < 4; ++idx) {
     if (this_sad[idx] < best_sad) {
       best_sad = this_sad[idx];
       tmp_mv->row = search_pos[idx].row + this_mv.row;
@@ -1859,12 +1867,12 @@ unsigned int vp9_int_pro_motion_estimation(const VP9_COMP *cpi, MACROBLOCK *x,
     }
   }
 
-  if (this_sad[0] < this_sad[4])
+  if (this_sad[0] < this_sad[3])
     this_mv.row -= 1;
   else
     this_mv.row += 1;
 
-  if (this_sad[1] < this_sad[3])
+  if (this_sad[1] < this_sad[2])
     this_mv.col -= 1;
   else
     this_mv.col += 1;

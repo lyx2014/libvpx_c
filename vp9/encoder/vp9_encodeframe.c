@@ -481,7 +481,8 @@ static int set_vt_partitioning(VP9_COMP *cpi,
 
 void vp9_set_vbp_thresholds(VP9_COMP *cpi, int q) {
   SPEED_FEATURES *const sf = &cpi->sf;
-  if (sf->partition_search_type != VAR_BASED_PARTITION) {
+  if (sf->partition_search_type != VAR_BASED_PARTITION &&
+      sf->partition_search_type != REFERENCE_PARTITION) {
     return;
   } else {
     VP9_COMMON *const cm = &cpi->common;
@@ -657,29 +658,29 @@ static void choose_partitioning(VP9_COMP *cpi,
         for (k = 0; k < 4; k++) {
           int x8_idx = x16_idx + ((k & 1) << 3);
           int y8_idx = y16_idx + ((k >> 1) << 3);
-            unsigned int sse = 0;
-            int sum = 0;
-            if (x8_idx < pixels_wide && y8_idx < pixels_high) {
-              int s_avg, d_avg;
+          unsigned int sse = 0;
+          int sum = 0;
+          if (x8_idx < pixels_wide && y8_idx < pixels_high) {
+            int s_avg, d_avg;
 #if CONFIG_VP9_HIGHBITDEPTH
-              if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-                s_avg = vp9_highbd_avg_8x8(s + y8_idx * sp + x8_idx, sp);
-                d_avg = vp9_highbd_avg_8x8(d + y8_idx * dp + x8_idx, dp);
-              } else {
-                s_avg = vp9_avg_8x8(s + y8_idx * sp + x8_idx, sp);
-                d_avg = vp9_avg_8x8(d + y8_idx * dp + x8_idx, dp);
-             }
-#else
+            if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+              s_avg = vp9_highbd_avg_8x8(s + y8_idx * sp + x8_idx, sp);
+              d_avg = vp9_highbd_avg_8x8(d + y8_idx * dp + x8_idx, dp);
+            } else {
               s_avg = vp9_avg_8x8(s + y8_idx * sp + x8_idx, sp);
               d_avg = vp9_avg_8x8(d + y8_idx * dp + x8_idx, dp);
-#endif
-              sum = s_avg - d_avg;
-              sse = sum * sum;
             }
-            // If variance is based on 8x8 downsampling, we stop here and have
-            // one sample for 8x8 block (so use 1 for count in fill_variance),
-            // which of course means variance = 0 for 8x8 block.
-            fill_variance(sse, sum, 0, &vst->split[k].part_variances.none);
+#else
+            s_avg = vp9_avg_8x8(s + y8_idx * sp + x8_idx, sp);
+            d_avg = vp9_avg_8x8(d + y8_idx * dp + x8_idx, dp);
+#endif
+            sum = s_avg - d_avg;
+            sse = sum * sum;
+          }
+          // If variance is based on 8x8 downsampling, we stop here and have
+          // one sample for 8x8 block (so use 1 for count in fill_variance),
+          // which of course means variance = 0 for 8x8 block.
+          fill_variance(sse, sum, 0, &vst->split[k].part_variances.none);
         }
         fill_variance_tree(&vt.split[i].split[j], BLOCK_16X16);
         // For low-resolution, compute the variance based on 8x8 down-sampling,
@@ -1592,7 +1593,8 @@ static void encode_b_rt(VP9_COMP *cpi, ThreadData *td,
   update_state_rt(cpi, td, ctx, mi_row, mi_col, bsize);
 
 #if CONFIG_VP9_TEMPORAL_DENOISING
-  if (cpi->oxcf.noise_sensitivity > 0 && output_enabled) {
+  if (cpi->oxcf.noise_sensitivity > 0 && output_enabled &&
+      cpi->common.frame_type != KEY_FRAME) {
     vp9_denoiser_denoise(&cpi->denoiser, x, mi_row, mi_col,
                          MAX(BLOCK_8X8, bsize), ctx);
   }
@@ -3514,9 +3516,8 @@ static void encode_nonrd_sb_row(VP9_COMP *cpi,
         set_offsets(cpi, tile_info, x, mi_row, mi_col, BLOCK_64X64);
         if (cpi->oxcf.aq_mode == CYCLIC_REFRESH_AQ && cm->seg.enabled &&
             xd->mi[0].src_mi->mbmi.segment_id) {
-          auto_partition_range(cpi, tile_info, xd, mi_row, mi_col,
-                               &x->min_partition_size,
-                               &x->max_partition_size);
+          x->max_partition_size = BLOCK_64X64;
+          x->min_partition_size = BLOCK_8X8;
           nonrd_pick_partition(cpi, td, tile_data, tp, mi_row, mi_col,
                                BLOCK_64X64, &dummy_rdc, 1,
                                INT64_MAX, td->pc_root);
