@@ -167,7 +167,7 @@ create_dsc () {
     local distro="$(find_distro $1)" orig="$2"
     local suite="$(find_suite $distro)"
     local orig_ver="$(echo "$orig" | sed -e 's/^.*_//' -e 's/\.orig\.tar.*$//')"
-    local dver="${orig_ver}-1~${distro}+1"
+    local dver="${orig_ver}-${distro}+1"
     $suite_postfix_p && { suite="${distro}${suite_postfix}"; }
     [ -x "$(which dch)" ] \
       || err "package devscripts isn't installed"
