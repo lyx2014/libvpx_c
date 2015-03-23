@@ -35,8 +35,8 @@ xread () {
   return $ret
 }
 
-mk_dver () { echo "$1" | sed -e 's/-/~/g'; }
-mk_uver () { echo "$1" | sed -e 's/-.*$//' -e 's/~/-/'; }
+mk_dver () { echo "$1"; }
+mk_uver () { echo "$1"; }
 dsc_source () { dpkg-parsechangelog | grep '^Source:' | awk '{print $2}'; }
 dsc_ver () { dpkg-parsechangelog | grep '^Version:' | awk '{print $2}'; }
 up_ver () { mk_uver "$(dsc_ver)"; }
@@ -137,7 +137,7 @@ create_orig () {
       HEAD \
       | xz -c -${zl}v > $orig
     mv .gitattributes.orig .gitattributes
-    git reset --hard HEAD^ && git clean -fdx
+    git reset --hard HEAD~1 && git clean -fdx
   } 1>&2
   echo $orig
 }
@@ -167,32 +167,25 @@ create_dsc () {
     local distro="$(find_distro $1)" orig="$2"
     local suite="$(find_suite $distro)"
     local orig_ver="$(echo "$orig" | sed -e 's/^.*_//' -e 's/\.orig\.tar.*$//')"
-    local dver="${orig_ver}-${distro}+1"
+	echo "orig_ver: $orig_ver"
+    local dver="${orig_ver}~1-${distro}+1"
+	echo "dver: $dver"
     $suite_postfix_p && { suite="${distro}${suite_postfix}"; }
     [ -x "$(which dch)" ] \
       || err "package devscripts isn't installed"
-    if [ -n "$modules_conf" ]; then
-      cp $modules_conf debian/modules.conf
-    fi
-    local bootstrap_args=""
-    if [ -n "$modules_list" ]; then
-      if [ "$modules_list" = "non-dfsg" ]; then
-        bootstrap_args="-mnon-dfsg"
-      else set_modules_${modules_list}; fi
-    fi
-    if test -n "$modules_add"; then
-      for x in $modules_add; do
-        bootstrap_args="$bootstrap_args -p${x}"
-      done
-    fi
     [ "$zl" -ge "1" ] || zl=1
-    git add debian/rules
     dch -b -m -v "$dver" --force-distribution -D "$suite" "Nightly build."
+	echo "WTF!@#!@#1"
     git add debian/changelog && git commit -m "nightly v$orig_ver"
+	echo "WTF!@#!@#2"
     dpkg-source -i.* -Zxz -z${zl} -b .
+	echo "WTF!@#!@#3"
     dpkg-genchanges -S > ../$(dsc_base)_source.changes
+	echo "WTF!@#!@#4"
     local dsc="../$(dsc_base).dsc"
+	echo "WTF!@#!@#5"
     git reset --hard HEAD^ && git clean -fdx
+	echo "WTF!@#!@#6"
   } 1>&2
   echo $dsc
 }
