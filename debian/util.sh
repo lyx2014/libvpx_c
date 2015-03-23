@@ -168,7 +168,7 @@ create_dsc () {
     local suite="$(find_suite $distro)"
     local orig_ver="$(echo "$orig" | sed -e 's/^.*_//' -e 's/\.orig\.tar.*$//')"
 	echo "orig_ver: $orig_ver"
-    local dver="${orig_ver}~1-${distro}+1"
+    local dver="${orig_ver}-${distro}+1"
 	echo "dver: $dver"
     $suite_postfix_p && { suite="${distro}${suite_postfix}"; }
     [ -x "$(which dch)" ] \
