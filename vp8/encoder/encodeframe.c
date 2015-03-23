@@ -469,7 +469,7 @@ void encode_mb_row(VP8_COMP *cpi,
                 while (mb_col > (*last_row_current_mb_col - nsync))
                 {
                     x86_pause_hint();
-                    thread_sleep(0);
+                    thread_sleep(1);
                 }
             }
         }
