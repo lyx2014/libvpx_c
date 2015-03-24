@@ -575,7 +575,7 @@ int vp8cx_create_encoder_threads(VP8_COMP *cpi)
             ethd->ptr1 = (void *)cpi;
             ethd->ptr2 = (void *)&cpi->mb_row_ei[ithread];
 
-            rc = pthread_create(&cpi->h_encoding_thread[ithread], 0,
+            rc = thread_create(&cpi->h_encoding_thread[ithread], 0,
                                 thread_encoding_proc, ethd);
             if(rc)
                 break;
@@ -609,7 +609,7 @@ int vp8cx_create_encoder_threads(VP8_COMP *cpi)
             sem_init(&cpi->h_event_end_lpf, 0, 0);
 
             lpfthd->ptr1 = (void *)cpi;
-            rc = pthread_create(&cpi->h_filter_thread, 0, thread_loopfilter,
+            rc = thread_create(&cpi->h_filter_thread, 0, thread_loopfilter,
                                 lpfthd);
 
             if(rc)

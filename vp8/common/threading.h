@@ -28,7 +28,7 @@ extern "C" {
 #define THREAD_SPECIFIC_INDEX DWORD
 #define pthread_t HANDLE
 #define pthread_attr_t DWORD
-#define pthread_create(thhandle,attr,thfunc,tharg) (int)((*thhandle=(HANDLE)_beginthreadex(NULL,0,(unsigned int (__stdcall *)(void *))thfunc,tharg,0,NULL))==NULL)
+#define thread_create(thhandle,attr,thfunc,tharg) (int)((*thhandle=(HANDLE)_beginthreadex(NULL,0,(unsigned int (__stdcall *)(void *))thfunc,tharg,0,NULL))==NULL)
 #define pthread_join(thread, result) ((WaitForSingleObject((thread),INFINITE)!=WAIT_OBJECT_0) || !CloseHandle(thread))
 #define pthread_detach(thread) if(thread!=NULL)CloseHandle(thread)
 #define thread_sleep(nms) Sleep(nms)
@@ -49,7 +49,7 @@ extern "C" {
 #define THREAD_SPECIFIC_INDEX PULONG
 #define pthread_t TID
 #define pthread_attr_t ULONG
-#define pthread_create(thhandle,attr,thfunc,tharg) \
+#define thread_create(thhandle,attr,thfunc,tharg) \
     ((int)((*(thhandle)=_beginthread(thfunc,NULL,1024*1024,tharg))==-1))
 #define pthread_join(thread, result) ((int)DosWaitThread(&(thread),0))
 #define pthread_detach(thread) 0
@@ -162,6 +162,13 @@ static inline int sem_destroy(sem_t * sem)
 #define thread_sleep(nms) DosSleep(nms)
 
 #else
+static inline int thread_create(pthread_t *thread, const pthread_attr_t *attr, void *(*start_routine) (void *), void *arg)
+{
+	pthread_attr_t thread_attr = { {0} };
+	
+	pthread_attr_setstacksize(&thread_attr , 240 * 1024);
+	return pthread_create(thread, &thread_attr, start_routine, arg);
+}
 
 #ifdef __APPLE__
 #define sem_t semaphore_t
