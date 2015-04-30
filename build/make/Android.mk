@@ -158,8 +158,6 @@ LOCAL_CFLAGS += \
 
 LOCAL_MODULE := libvpx
 
-LOCAL_LDLIBS := -llog
-
 ifeq ($(CONFIG_RUNTIME_CPU_DETECT),yes)
   LOCAL_STATIC_LIBRARIES := cpufeatures
 endif
@@ -184,7 +182,11 @@ clean:
 	@$(RM) -r $(ASM_CNV_PATH)
 	@$(RM) $(CLEAN-OBJS)
 
-include $(BUILD_SHARED_LIBRARY)
+ifeq ($(ENABLE_SHARED),1)
+  include $(BUILD_SHARED_LIBRARY)
+else
+  include $(BUILD_STATIC_LIBRARY)
+endif
 
 ifeq ($(CONFIG_RUNTIME_CPU_DETECT),yes)
 $(call import-module,cpufeatures)

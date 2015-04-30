@@ -83,8 +83,7 @@ static void free_seg_map(VP9_COMMON *cm) {
   }
 }
 
-void vp9_free_ref_frame_buffers(VP9_COMMON *cm) {
-  BufferPool *const pool = cm->buffer_pool;
+void vp9_free_ref_frame_buffers(BufferPool *pool) {
   int i;
 
   for (i = 0; i < FRAME_BUFFERS; ++i) {
@@ -97,10 +96,14 @@ void vp9_free_ref_frame_buffers(VP9_COMMON *cm) {
     pool->frame_bufs[i].mvs = NULL;
     vp9_free_frame_buffer(&pool->frame_bufs[i].buf);
   }
+}
 
+void vp9_free_postproc_buffers(VP9_COMMON *cm) {
 #if CONFIG_VP9_POSTPROC
   vp9_free_frame_buffer(&cm->post_proc_buffer);
   vp9_free_frame_buffer(&cm->post_proc_buffer_int);
+#else
+  (void)cm;
 #endif
 }
 
@@ -142,7 +145,6 @@ int vp9_alloc_context_buffers(VP9_COMMON *cm, int width, int height) {
 }
 
 void vp9_remove_common(VP9_COMMON *cm) {
-  vp9_free_ref_frame_buffers(cm);
   vp9_free_context_buffers(cm);
 
   vpx_free(cm->fc);
@@ -154,7 +156,7 @@ void vp9_remove_common(VP9_COMMON *cm) {
 void vp9_init_context_buffers(VP9_COMMON *cm) {
   cm->setup_mi(cm);
   if (cm->last_frame_seg_map && !cm->frame_parallel_decode)
-    vpx_memset(cm->last_frame_seg_map, 0, cm->mi_rows * cm->mi_cols);
+    memset(cm->last_frame_seg_map, 0, cm->mi_rows * cm->mi_cols);
 }
 
 void vp9_swap_current_and_last_seg_map(VP9_COMMON *cm) {

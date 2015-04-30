@@ -153,11 +153,11 @@ static void multiframe_quality_enhance_block
         actd = (vp8_variance16x16(yd, yd_stride, VP8_ZEROS, 0, &sse)+128)>>8;
         act = (vp8_variance16x16(y, y_stride, VP8_ZEROS, 0, &sse)+128)>>8;
 #ifdef USE_SSD
-        sad = (vp8_variance16x16(y, y_stride, yd, yd_stride, &sse));
+        vp8_variance16x16(y, y_stride, yd, yd_stride, &sse);
         sad = (sse + 128)>>8;
-        usad = (vp8_variance8x8(u, uv_stride, ud, uvd_stride, &sse));
+        vp8_variance8x8(u, uv_stride, ud, uvd_stride, &sse);
         usad = (sse + 32)>>6;
-        vsad = (vp8_variance8x8(v, uv_stride, vd, uvd_stride, &sse));
+        vp8_variance8x8(v, uv_stride, vd, uvd_stride, &sse);
         vsad = (sse + 32)>>6;
 #else
         sad = (vp8_sad16x16(y, y_stride, yd, yd_stride, UINT_MAX) + 128) >> 8;
@@ -170,11 +170,11 @@ static void multiframe_quality_enhance_block
         actd = (vp8_variance8x8(yd, yd_stride, VP8_ZEROS, 0, &sse)+32)>>6;
         act = (vp8_variance8x8(y, y_stride, VP8_ZEROS, 0, &sse)+32)>>6;
 #ifdef USE_SSD
-        sad = (vp8_variance8x8(y, y_stride, yd, yd_stride, &sse));
+        vp8_variance8x8(y, y_stride, yd, yd_stride, &sse);
         sad = (sse + 32)>>6;
-        usad = (vp8_variance4x4(u, uv_stride, ud, uvd_stride, &sse));
+        vp8_variance4x4(u, uv_stride, ud, uvd_stride, &sse);
         usad = (sse + 8)>>4;
-        vsad = (vp8_variance4x4(v, uv_stride, vd, uvd_stride, &sse));
+        vp8_variance4x4(v, uv_stride, vd, uvd_stride, &sse);
         vsad = (sse + 8)>>4;
 #else
         sad = (vp8_sad8x8(y, y_stride, yd, yd_stride, UINT_MAX) + 32) >> 6;
@@ -231,9 +231,9 @@ static void multiframe_quality_enhance_block
         {
             vp8_copy_mem8x8(y, y_stride, yd, yd_stride);
             for (up = u, udp = ud, i = 0; i < uvblksize; ++i, up += uv_stride, udp += uvd_stride)
-                vpx_memcpy(udp, up, uvblksize);
+                memcpy(udp, up, uvblksize);
             for (vp = v, vdp = vd, i = 0; i < uvblksize; ++i, vp += uv_stride, vdp += uvd_stride)
-                vpx_memcpy(vdp, vp, uvblksize);
+                memcpy(vdp, vp, uvblksize);
         }
     }
 }
@@ -341,8 +341,8 @@ void vp8_multiframe_quality_enhance
                                 for (k = 0; k < 4; ++k, up += show->uv_stride, udp += dest->uv_stride,
                                                         vp += show->uv_stride, vdp += dest->uv_stride)
                                 {
-                                    vpx_memcpy(udp, up, 4);
-                                    vpx_memcpy(vdp, vp, 4);
+                                    memcpy(udp, up, 4);
+                                    memcpy(vdp, vp, 4);
                                 }
                             }
                         }

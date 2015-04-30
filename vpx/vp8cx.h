@@ -16,7 +16,7 @@
  * @{
  */
 #include "./vp8.h"
-#include "vpx/vpx_encoder.h"
+#include "./vpx_encoder.h"
 
 /*!\file
  * \brief Provides definitions for using VP8 or VP9 encoder algorithm within the
@@ -508,6 +508,12 @@ enum vp8e_enc_control_id {
    * Supported in codecs: VP9
    */
   VP9E_SET_COLOR_SPACE,
+
+  /*!\brief Codec control function to get an Active map back from the encoder.
+   *
+   * Supported in codecs: VP9
+   */
+  VP9E_GET_ACTIVEMAP,
 };
 
 /*!\brief vpx 1-D scaling mode
@@ -691,6 +697,8 @@ VPX_CTRL_USE_TYPE(VP9E_SET_NOISE_SENSITIVITY,  unsigned int)
 VPX_CTRL_USE_TYPE(VP9E_SET_TUNE_CONTENT, int) /* vp9e_tune_content */
 
 VPX_CTRL_USE_TYPE(VP9E_SET_COLOR_SPACE, int)
+
+VPX_CTRL_USE_TYPE(VP9E_GET_ACTIVEMAP, vpx_active_map_t *)
 /*! @} - end defgroup vp8_encoder */
 #ifdef __cplusplus
 }  // extern "C"

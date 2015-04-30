@@ -502,11 +502,11 @@ class Trans16x16TestBase {
       fwd_txfm_ref(input_extreme_block, output_ref_block, pitch_, tx_type_);
 
       // clear reconstructed pixel buffers
-      vpx_memset(dst, 0, kNumCoeffs * sizeof(uint8_t));
-      vpx_memset(ref, 0, kNumCoeffs * sizeof(uint8_t));
+      memset(dst, 0, kNumCoeffs * sizeof(uint8_t));
+      memset(ref, 0, kNumCoeffs * sizeof(uint8_t));
 #if CONFIG_VP9_HIGHBITDEPTH
-      vpx_memset(dst16, 0, kNumCoeffs * sizeof(uint16_t));
-      vpx_memset(ref16, 0, kNumCoeffs * sizeof(uint16_t));
+      memset(dst16, 0, kNumCoeffs * sizeof(uint16_t));
+      memset(ref16, 0, kNumCoeffs * sizeof(uint16_t));
 #endif
 
       // quantization with maximum allowed step sizes
@@ -933,12 +933,4 @@ INSTANTIATE_TEST_CASE_P(
         make_tuple(&idct16x16_12,
                    &idct16x16_256_add_12_sse2, 3167, VPX_BITS_12)));
 #endif  // HAVE_SSE2 && CONFIG_VP9_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
-
-#if HAVE_SSSE3 && !CONFIG_VP9_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
-INSTANTIATE_TEST_CASE_P(
-    SSSE3, Trans16x16DCT,
-    ::testing::Values(
-        make_tuple(&vp9_fdct16x16_c, &vp9_idct16x16_256_add_ssse3, 0,
-                   VPX_BITS_8)));
-#endif  // HAVE_SSSE3 && !CONFIG_VP9_HIGHBITDEPTH && !CONFIG_EMULATE_HARDWARE
 }  // namespace
