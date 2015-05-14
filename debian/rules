@@ -7,7 +7,7 @@ DEB_HOST_ARCH_CPU  ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_CPU)
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
 configure_flags += \
-  --prefix=/usr \
+  --prefix=/usr/local \
   --enable-pic \
   --enable-shared \
   --disable-install-bins \
@@ -30,6 +30,7 @@ ifeq ($(DEB_HOST_ARCH), armhf)
 # thus we use ARMv6 and -marm (since no thumb2 on ARMv6) to ensure compatability
 # with all ARMv7 cores we support.
 CFLAGS += -marm
+CXXFLAGS += -marm
 configure_flags += --target=armv6-linux-gcc --enable-small
 else
 ifeq ($(DEB_HOST_ARCH), amd64)
@@ -65,13 +66,9 @@ CROSS=$(DEB_HOST_GNU_TYPE)-
 export CROSS
 endif
 
-CFLAGS += -Wall -g
-
-ifneq (,$(findstring noopt,$(DEB_BUILD_OPTIONS)))
-CFLAGS += -O0
-else
-CFLAGS += -O2
-endif
+CFLAGS += -Wall $(shell dpkg-buildflags --get CPPFLAGS; dpkg-buildflags --get CFLAGS)
+CXXFLAGS += -Wall $(shell dpkg-buildflags --get CPPFLAGS; dpkg-buildflags --get CXXFLAGS)
+LDFLAGS += $(shell dpkg-buildflags --get LDFLAGS)
 
 builddir := $(CURDIR)/builddir
 
@@ -80,17 +77,19 @@ configure-stamp:
 	dh_testdir
 	mkdir -p $(builddir); \
 	cd $(builddir); \
-	CFLAGS="$(CFLAGS)" $(CURDIR)/configure \
+	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" $(CURDIR)/configure \
 		$(configure_flags)
 	touch $@
 ifeq ($(BUILD_NEON), Yes)
 	mkdir -p $(builddir)-neon; \
 	cd $(builddir)-neon; \
-	CFLAGS="$(CFLAGS)" $(CURDIR)/configure \
+	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" LDFLAGS="$(LDFLAGS)" $(CURDIR)/configure \
 		$(configure_flags_neon)
 	touch $@
 endif
 
+build-arch: build
+build-indep: build
 build: build-stamp
 
 build-stamp: configure-stamp
@@ -140,23 +139,23 @@ binary-arch: build install
 	dh_testdir
 	dh_testroot
 	dh_install -s
-	mkdir -p debian/libvpx1/usr/lib/$(DEB_HOST_MULTIARCH)
-	cp -a builddir/vpx-vp8-*/lib/libvpx.so.* debian/libvpx1/usr/lib/$(DEB_HOST_MULTIARCH)
+	mkdir -p debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)
+	cp -a builddir/vpx-vp8-*/lib/libvpx.so.* debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)
 ifeq ($(BUILD_NEON), Yes)
-	mkdir -p debian/libvpx1/usr/lib/$(DEB_HOST_MULTIARCH)/vfp/neon
-	cp -a builddir-neon/vpx-vp8-*/lib/libvpx.so.* debian/libvpx1/usr/lib/$(DEB_HOST_MULTIARCH)/vfp/neon
+	mkdir -p debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/vfp/neon
+	cp -a builddir-neon/vpx-vp8-*/lib/libvpx.so.* debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/vfp/neon
 endif
 	mkdir -p debian/libvpx-dev/usr/lib/$(DEB_HOST_MULTIARCH)
 	cp -a builddir/vpx-vp8-*/lib/libvpx.so builddir/vpx-vp8-*/lib/libvpx.a debian/libvpx-dev/usr/lib/$(DEB_HOST_MULTIARCH)
 	dh_installdocs -s -A README AUTHORS
 	dh_installchangelogs -s CHANGELOG
 	dh_link -s
-	dh_strip -s --dbg-package=libvpx1-dbg
+	dh_strip -s --dbg-package=libvpx2-dbg
 	# Make sure not to conflict with past SONAMEs:
-	rm -rf debian/libvpx1-dbg/usr/lib/debug/usr/bin
+	rm -rf debian/libvpx2-dbg/usr/lib/debug/usr/bin
 	dh_compress -s
 	dh_fixperms -s
-	dh_makeshlibs -plibvpx1 -V 'libvpx1 (>= 1.1.0)' -- -c4
+	dh_makeshlibs -plibvpx2 -V 'libvpx2 (>= 1.4.0)' -- -c4
 	dh_installdeb -s
 	dh_shlibdeps -s
 	dh_gencontrol -s
