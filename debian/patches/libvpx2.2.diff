@@ -1,0 +1,36 @@
+Description: <short summary of the patch>
+ TODO: Put a short summary on the line above and replace this paragraph
+ with a longer explanation of this change. Complete the meta-information
+ with other relevant fields (see below for details). To make it easier, the
+ information below has been extracted from the changelog. Adjust it or drop
+ it.
+ .
+ libvpx2 (1.4.0-2) unstable; urgency=medium
+ .
+   * Upload to unstable.
+Author: Sebastian Dröge <slomo@debian.org>
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: <vendor|upstream|other>, <url of original patch>
+Bug: <url in upstream bugtracker>
+Bug-Debian: https://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: <no|not-needed|url proving that it has been forwarded>
+Reviewed-By: <name and email of someone who approved the patch>
+Last-Update: <YYYY-MM-DD>
+
+--- libvpx2-1.4.0.orig/libs.mk
++++ libvpx2-1.4.0/libs.mk
+@@ -442,7 +442,7 @@ $(LIBVPX_TEST_OBJS) $(LIBVPX_TEST_OBJS:.
+ OBJS-$(BUILD_LIBVPX) += $(LIBVPX_TEST_OBJS)
+ BINS-$(BUILD_LIBVPX) += $(LIBVPX_TEST_BINS)
+ 
+-CODEC_LIB=$(if $(CONFIG_DEBUG_LIBS),vpx_g,vpx)
++CODEC_LIB=$(if $(CONFIG_DEBUG_LIBS),vpx2_g,vpx2)
+ CODEC_LIB_SUF=$(if $(CONFIG_SHARED),.so,.a)
+ $(foreach bin,$(LIBVPX_TEST_BINS),\
+     $(if $(BUILD_LIBVPX),$(eval $(bin): \

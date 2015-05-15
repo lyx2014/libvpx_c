@@ -1,0 +1,127 @@
+Description: <short summary of the patch>
+ TODO: Put a short summary on the line above and replace this paragraph
+ with a longer explanation of this change. Complete the meta-information
+ with other relevant fields (see below for details). To make it easier, the
+ information below has been extracted from the changelog. Adjust it or drop
+ it.
+ .
+ libvpx2 (1.4.0-2) unstable; urgency=medium
+ .
+   * Upload to unstable.
+Author: Sebastian Dröge <slomo@debian.org>
+
+---
+The information above should follow the Patch Tagging Guidelines, please
+checkout http://dep.debian.net/deps/dep3/ to learn about the format. Here
+are templates for supplementary fields that you might want to add:
+
+Origin: <vendor|upstream|other>, <url of original patch>
+Bug: <url in upstream bugtracker>
+Bug-Debian: https://bugs.debian.org/<bugnumber>
+Bug-Ubuntu: https://launchpad.net/bugs/<bugnumber>
+Forwarded: <no|not-needed|url proving that it has been forwarded>
+Reviewed-By: <name and email of someone who approved the patch>
+Last-Update: <YYYY-MM-DD>
+
+--- libvpx2-1.4.0.orig/libs.mk
++++ libvpx2-1.4.0/libs.mk
+@@ -166,8 +166,8 @@ INSTALL-LIBS-$(CONFIG_SHARED) += $(forea
+ INSTALL-LIBS-$(CONFIG_SHARED) += $(foreach p,$(VS_PLATFORMS),$(LIBSUBDIR)/$(p)/vpx.exp)
+ endif
+ else
+-INSTALL-LIBS-$(CONFIG_STATIC) += $(LIBSUBDIR)/libvpx.a
+-INSTALL-LIBS-$(CONFIG_DEBUG_LIBS) += $(LIBSUBDIR)/libvpx_g.a
++INSTALL-LIBS-$(CONFIG_STATIC) += $(LIBSUBDIR)/libvpx2.a
++INSTALL-LIBS-$(CONFIG_DEBUG_LIBS) += $(LIBSUBDIR)/libvpx2_g.a
+ endif
+ 
+ CODEC_SRCS=$(call enabled,CODEC_SRCS)
+@@ -224,8 +224,8 @@ endif
+ else
+ LIBVPX_OBJS=$(call objs,$(CODEC_SRCS))
+ OBJS-$(BUILD_LIBVPX) += $(LIBVPX_OBJS)
+-LIBS-$(if $(BUILD_LIBVPX),$(CONFIG_STATIC)) += $(BUILD_PFX)libvpx.a $(BUILD_PFX)libvpx_g.a
+-$(BUILD_PFX)libvpx_g.a: $(LIBVPX_OBJS)
++LIBS-$(if $(BUILD_LIBVPX),$(CONFIG_STATIC)) += $(BUILD_PFX)libvpx2.a $(BUILD_PFX)libvpx2_g.a
++$(BUILD_PFX)libvpx2_g.a: $(LIBVPX_OBJS)
+ 
+ 
+ BUILD_LIBVPX_SO         := $(if $(BUILD_LIBVPX),$(CONFIG_SHARED))
+@@ -234,36 +234,36 @@ SO_VERSION_MAJOR := 2
+ SO_VERSION_MINOR := 0
+ SO_VERSION_PATCH := 0
+ ifeq ($(filter darwin%,$(TGT_OS)),$(TGT_OS))
+-LIBVPX_SO               := libvpx.$(SO_VERSION_MAJOR).dylib
+-EXPORT_FILE             := libvpx.syms
++LIBVPX_SO               := libvpx2.$(SO_VERSION_MAJOR).dylib
++EXPORT_FILE             := libvpx2.syms
+ LIBVPX_SO_SYMLINKS      := $(addprefix $(LIBSUBDIR)/, \
+-                             libvpx.dylib  )
++                             libvpx2.dylib  )
+ else
+-LIBVPX_SO               := libvpx.so.$(SO_VERSION_MAJOR).$(SO_VERSION_MINOR).$(SO_VERSION_PATCH)
+-EXPORT_FILE             := libvpx.ver
++LIBVPX_SO               := libvpx2.so.$(SO_VERSION_MAJOR).$(SO_VERSION_MINOR).$(SO_VERSION_PATCH)
++EXPORT_FILE             := libvpx2.ver
+ LIBVPX_SO_SYMLINKS      := $(addprefix $(LIBSUBDIR)/, \
+-                             libvpx.so libvpx.so.$(SO_VERSION_MAJOR) \
+-                             libvpx.so.$(SO_VERSION_MAJOR).$(SO_VERSION_MINOR))
++                             libvpx2.so libvpx2.so.$(SO_VERSION_MAJOR) \
++                             libvpx2.so.$(SO_VERSION_MAJOR).$(SO_VERSION_MINOR))
+ endif
+ 
+ LIBS-$(BUILD_LIBVPX_SO) += $(BUILD_PFX)$(LIBVPX_SO)\
+                            $(notdir $(LIBVPX_SO_SYMLINKS))
+ $(BUILD_PFX)$(LIBVPX_SO): $(LIBVPX_OBJS) $(EXPORT_FILE)
+ $(BUILD_PFX)$(LIBVPX_SO): extralibs += -lm
+-$(BUILD_PFX)$(LIBVPX_SO): SONAME = libvpx.so.$(SO_VERSION_MAJOR)
++$(BUILD_PFX)$(LIBVPX_SO): SONAME = libvpx2.so.$(SO_VERSION_MAJOR)
+ $(BUILD_PFX)$(LIBVPX_SO): EXPORTS_FILE = $(EXPORT_FILE)
+ 
+-libvpx.ver: $(call enabled,CODEC_EXPORTS)
++libvpx2.ver: $(call enabled,CODEC_EXPORTS)
+ 	@echo "    [CREATE] $@"
+ 	$(qexec)echo "{ global:" > $@
+ 	$(qexec)for f in $?; do awk '{print $$2";"}' < $$f >>$@; done
+ 	$(qexec)echo "local: *; };" >> $@
+-CLEAN-OBJS += libvpx.ver
++CLEAN-OBJS += libvpx2.ver
+ 
+-libvpx.syms: $(call enabled,CODEC_EXPORTS)
++libvpx2.syms: $(call enabled,CODEC_EXPORTS)
+ 	@echo "    [CREATE] $@"
+ 	$(qexec)awk '{print "_"$$2}' $^ >$@
+-CLEAN-OBJS += libvpx.syms
++CLEAN-OBJS += libvpx2.syms
+ 
+ define libvpx_symlink_template
+ $(1): $(2)
+@@ -310,8 +310,8 @@ INSTALL_MAPS += $(LIBSUBDIR)/pkgconfig/%
+ CLEAN-OBJS += vpx.pc
+ endif
+ 
+-LIBS-$(LIPO_LIBVPX) += libvpx.a
+-$(eval $(if $(LIPO_LIBVPX),$(call lipo_lib_template,libvpx.a)))
++LIBS-$(LIPO_LIBVPX) += libvpx2.a
++$(eval $(if $(LIPO_LIBVPX),$(call lipo_lib_template,libvpx2.a)))
+ 
+ #
+ # Rule to make assembler configuration file from C configuration file
+@@ -402,7 +402,7 @@ gtest.$(VCPROJ_SFX): $(SRC_PATH_BARE)/th
+ 
+ PROJECTS-$(CONFIG_MSVS) += gtest.$(VCPROJ_SFX)
+ 
+-test_libvpx.$(VCPROJ_SFX): $(LIBVPX_TEST_SRCS) vpx.$(VCPROJ_SFX) gtest.$(VCPROJ_SFX)
++test_libvpx2.$(VCPROJ_SFX): $(LIBVPX_TEST_SRCS) vpx.$(VCPROJ_SFX) gtest.$(VCPROJ_SFX)
+ 	@echo "    [CREATE] $@"
+ 	$(qexec)$(GEN_VCPROJ) \
+             --exe \
+@@ -417,7 +417,7 @@ test_libvpx.$(VCPROJ_SFX): $(LIBVPX_TEST
+             -I. -I"$(SRC_PATH_BARE)/third_party/googletest/src/include" \
+             -L. -l$(CODEC_LIB) -l$(GTEST_LIB) $^
+ 
+-PROJECTS-$(CONFIG_MSVS) += test_libvpx.$(VCPROJ_SFX)
++PROJECTS-$(CONFIG_MSVS) += test_libvpx2.$(VCPROJ_SFX)
+ 
+ LIBVPX_TEST_BINS := $(addprefix $(TGT_OS:win64=x64)/Release/,$(notdir $(LIBVPX_TEST_BINS)))
+ endif

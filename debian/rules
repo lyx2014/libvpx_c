@@ -120,8 +120,8 @@ ifeq ($(BUILD_NEON), Yes)
 	$(MAKE) -C $(builddir)-neon verbose=yes dist
 endif
 	# don't use stripped library...
-	cp -v $(builddir)/libvpx_g.a \
-	  $(builddir)/vpx-vp8-*/lib/libvpx.a
+	cp -v $(builddir)/libvpx2_g.a \
+	  $(builddir)/vpx-vp8-*/lib/libvpx2.a
 
 binary-indep: build install
 	dh_testdir
@@ -143,12 +143,12 @@ binary-arch: build install
 	dh_testroot
 	dh_install -s
 	mkdir -p debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)
-	cp -a builddir/vpx-vp8-*/lib/libvpx.so.* debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)
-	mv debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx.so.2.0.0 debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx2.so.2.0.0
-	rm debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx.so.2
-	rm debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx.so.2.0
-	ln -s libvpx2.so.2.0.0 debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx2.so.2.0
-	ln -s libvpx2.so.2.0 debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx2.so.2
+	cp -a builddir/vpx-vp8-*/lib/libvpx2.so.* debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)
+#	mv debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx.so.2.0.0 debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx2.so.2.0.0
+#	rm debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx2.so.2
+#	rm debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx.so.2.0
+#	ln -s libvpx2.so.2.0.0 debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx2.so.2.0
+#	ln -s libvpx2.so.2.0 debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx2.so.2
 	ls -halt debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/
 ifeq ($(BUILD_NEON), Yes)
 	mkdir -p debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/vfp/neon
@@ -156,7 +156,7 @@ ifeq ($(BUILD_NEON), Yes)
 endif
 	mkdir -p debian/libvpx2-dev/usr/lib/$(DEB_HOST_MULTIARCH)
 	ln -s libvpx2.so.2 debian/libvpx2-dev/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx2.so
-	cp builddir/vpx-vp8-*/lib/libvpx.a debian/libvpx2-dev/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx2.a
+	cp builddir/vpx-vp8-*/lib/libvpx2.a debian/libvpx2-dev/usr/lib/$(DEB_HOST_MULTIARCH)/
 	ls -halt debian/libvpx2-dev/usr/lib/$(DEB_HOST_MULTIARCH)/
 	mv debian/libvpx2-dev/usr/lib/pkgconfig/vpx.pc debian/libvpx2-dev/usr/lib/pkgconfig/vpx2.pc
 	perl -pi -e 's/vpx/vpx2/' debian/libvpx2-dev/usr/lib/pkgconfig/vpx2.pc
@@ -170,7 +170,7 @@ endif
 	rm -rf debian/libvpx2-dbg/usr/lib/debug/usr/bin
 	dh_compress -s
 	dh_fixperms -s
-	dh_makeshlibs -plibvpx2 -V 'libvpx2 (>= 1.4.0)' -- -c4
+	dh_makeshlibs -plibvpx2 -V 'libvpx2 (>= 1.4.0)' -- -c4 -d
 	dh_installdeb -s
 	dh_shlibdeps -s
 	dh_gencontrol -s
