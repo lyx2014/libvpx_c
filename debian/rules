@@ -7,9 +7,11 @@ DEB_HOST_ARCH_CPU  ?= $(shell dpkg-architecture -qDEB_HOST_ARCH_CPU)
 DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 
 configure_flags += \
-  --prefix=/usr/local \
+  --prefix=/usr \
   --enable-pic \
   --enable-shared \
+  --disable-docs \
+  --disable-examples \
   --disable-install-bins \
   --disable-install-srcs
 
@@ -124,6 +126,7 @@ endif
 binary-indep: build install
 	dh_testdir
 	dh_testroot
+	find debian/libvpx2-dev/
 	dh_install -i
 	dh_installchangelogs -i CHANGELOG
 	dh_installdocs -i -A README AUTHORS
@@ -141,12 +144,24 @@ binary-arch: build install
 	dh_install -s
 	mkdir -p debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)
 	cp -a builddir/vpx-vp8-*/lib/libvpx.so.* debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)
+	mv debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx.so.2.0.0 debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx2.so.2.0.0
+	rm debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx.so.2
+	rm debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx.so.2.0
+	ln -s libvpx2.so.2.0.0 debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx2.so.2.0
+	ln -s libvpx2.so.2.0 debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx2.so.2
+	ls -halt debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/
 ifeq ($(BUILD_NEON), Yes)
 	mkdir -p debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/vfp/neon
 	cp -a builddir-neon/vpx-vp8-*/lib/libvpx.so.* debian/libvpx2/usr/lib/$(DEB_HOST_MULTIARCH)/vfp/neon
 endif
-	mkdir -p debian/libvpx-dev/usr/lib/$(DEB_HOST_MULTIARCH)
-	cp -a builddir/vpx-vp8-*/lib/libvpx.so builddir/vpx-vp8-*/lib/libvpx.a debian/libvpx-dev/usr/lib/$(DEB_HOST_MULTIARCH)
+	mkdir -p debian/libvpx2-dev/usr/lib/$(DEB_HOST_MULTIARCH)
+	ln -s libvpx2.so.2 debian/libvpx2-dev/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx2.so
+	cp builddir/vpx-vp8-*/lib/libvpx.a debian/libvpx2-dev/usr/lib/$(DEB_HOST_MULTIARCH)/libvpx2.a
+	ls -halt debian/libvpx2-dev/usr/lib/$(DEB_HOST_MULTIARCH)/
+	mv debian/libvpx2-dev/usr/lib/pkgconfig/vpx.pc debian/libvpx2-dev/usr/lib/pkgconfig/vpx2.pc
+	perl -pi -e 's/vpx/vpx2/' debian/libvpx2-dev/usr/lib/pkgconfig/vpx2.pc
+	perl -pi -e 's/\/include/\/include\/vpx2/'  debian/libvpx2-dev/usr/lib/pkgconfig/vpx2.pc
+	cat debian/libvpx2-dev/usr/lib/pkgconfig/vpx2.pc
 	dh_installdocs -s -A README AUTHORS
 	dh_installchangelogs -s CHANGELOG
 	dh_link -s

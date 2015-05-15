@@ -1,2 +1,2 @@
-builddir/vpx-vp8-*/include/vpx usr/local/include
-builddir/vpx-vp8-*/lib/pkgconfig usr/local/lib
+builddir/vpx-vp8-*/include/vpx usr/include/vpx2
+builddir/vpx-vp8-*/lib/pkgconfig usr/lib
