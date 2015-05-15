@@ -166,8 +166,8 @@ INSTALL-LIBS-$(CONFIG_SHARED) += $(foreach p,$(VS_PLATFORMS),$(LIBSUBDIR)/$(p)/v
 INSTALL-LIBS-$(CONFIG_SHARED) += $(foreach p,$(VS_PLATFORMS),$(LIBSUBDIR)/$(p)/vpx.exp)
 endif
 else
-INSTALL-LIBS-$(CONFIG_STATIC) += $(LIBSUBDIR)/libvpx2.a
-INSTALL-LIBS-$(CONFIG_DEBUG_LIBS) += $(LIBSUBDIR)/libvpx2_g.a
+INSTALL-LIBS-$(CONFIG_STATIC) += $(LIBSUBDIR)/libvpx.a
+INSTALL-LIBS-$(CONFIG_DEBUG_LIBS) += $(LIBSUBDIR)/libvpx_g.a
 endif
 
 CODEC_SRCS=$(call enabled,CODEC_SRCS)
@@ -224,8 +224,8 @@ endif
 else
 LIBVPX_OBJS=$(call objs,$(CODEC_SRCS))
 OBJS-$(BUILD_LIBVPX) += $(LIBVPX_OBJS)
-LIBS-$(if $(BUILD_LIBVPX),$(CONFIG_STATIC)) += $(BUILD_PFX)libvpx2.a $(BUILD_PFX)libvpx2_g.a
-$(BUILD_PFX)libvpx2_g.a: $(LIBVPX_OBJS)
+LIBS-$(if $(BUILD_LIBVPX),$(CONFIG_STATIC)) += $(BUILD_PFX)libvpx.a $(BUILD_PFX)libvpx_g.a
+$(BUILD_PFX)libvpx_g.a: $(LIBVPX_OBJS)
 
 
 BUILD_LIBVPX_SO         := $(if $(BUILD_LIBVPX),$(CONFIG_SHARED))
@@ -234,36 +234,36 @@ SO_VERSION_MAJOR := 2
 SO_VERSION_MINOR := 0
 SO_VERSION_PATCH := 0
 ifeq ($(filter darwin%,$(TGT_OS)),$(TGT_OS))
-LIBVPX_SO               := libvpx2.$(SO_VERSION_MAJOR).dylib
-EXPORT_FILE             := libvpx2.syms
+LIBVPX_SO               := libvpx.$(SO_VERSION_MAJOR).dylib
+EXPORT_FILE             := libvpx.syms
 LIBVPX_SO_SYMLINKS      := $(addprefix $(LIBSUBDIR)/, \
-                             libvpx2.dylib  )
+                             libvpx.dylib  )
 else
-LIBVPX_SO               := libvpx2.so.$(SO_VERSION_MAJOR).$(SO_VERSION_MINOR).$(SO_VERSION_PATCH)
-EXPORT_FILE             := libvpx2.ver
+LIBVPX_SO               := libvpx.so.$(SO_VERSION_MAJOR).$(SO_VERSION_MINOR).$(SO_VERSION_PATCH)
+EXPORT_FILE             := libvpx.ver
 LIBVPX_SO_SYMLINKS      := $(addprefix $(LIBSUBDIR)/, \
-                             libvpx2.so libvpx2.so.$(SO_VERSION_MAJOR) \
-                             libvpx2.so.$(SO_VERSION_MAJOR).$(SO_VERSION_MINOR))
+                             libvpx.so libvpx.so.$(SO_VERSION_MAJOR) \
+                             libvpx.so.$(SO_VERSION_MAJOR).$(SO_VERSION_MINOR))
 endif
 
 LIBS-$(BUILD_LIBVPX_SO) += $(BUILD_PFX)$(LIBVPX_SO)\
                            $(notdir $(LIBVPX_SO_SYMLINKS))
 $(BUILD_PFX)$(LIBVPX_SO): $(LIBVPX_OBJS) $(EXPORT_FILE)
 $(BUILD_PFX)$(LIBVPX_SO): extralibs += -lm
-$(BUILD_PFX)$(LIBVPX_SO): SONAME = libvpx2.so.$(SO_VERSION_MAJOR)
+$(BUILD_PFX)$(LIBVPX_SO): SONAME = libvpx.so.$(SO_VERSION_MAJOR)
 $(BUILD_PFX)$(LIBVPX_SO): EXPORTS_FILE = $(EXPORT_FILE)
 
-libvpx2.ver: $(call enabled,CODEC_EXPORTS)
+libvpx.ver: $(call enabled,CODEC_EXPORTS)
 	@echo "    [CREATE] $@"
 	$(qexec)echo "{ global:" > $@
 	$(qexec)for f in $?; do awk '{print $$2";"}' < $$f >>$@; done
 	$(qexec)echo "local: *; };" >> $@
-CLEAN-OBJS += libvpx2.ver
+CLEAN-OBJS += libvpx.ver
 
-libvpx2.syms: $(call enabled,CODEC_EXPORTS)
+libvpx.syms: $(call enabled,CODEC_EXPORTS)
 	@echo "    [CREATE] $@"
 	$(qexec)awk '{print "_"$$2}' $^ >$@
-CLEAN-OBJS += libvpx2.syms
+CLEAN-OBJS += libvpx.syms
 
 define libvpx_symlink_template
 $(1): $(2)
@@ -310,8 +310,8 @@ INSTALL_MAPS += $(LIBSUBDIR)/pkgconfig/%.pc %.pc
 CLEAN-OBJS += vpx.pc
 endif
 
-LIBS-$(LIPO_LIBVPX) += libvpx2.a
-$(eval $(if $(LIPO_LIBVPX),$(call lipo_lib_template,libvpx2.a)))
+LIBS-$(LIPO_LIBVPX) += libvpx.a
+$(eval $(if $(LIPO_LIBVPX),$(call lipo_lib_template,libvpx.a)))
 
 #
 # Rule to make assembler configuration file from C configuration file
@@ -402,7 +402,7 @@ gtest.$(VCPROJ_SFX): $(SRC_PATH_BARE)/third_party/googletest/src/src/gtest-all.c
 
 PROJECTS-$(CONFIG_MSVS) += gtest.$(VCPROJ_SFX)
 
-test_libvpx2.$(VCPROJ_SFX): $(LIBVPX_TEST_SRCS) vpx.$(VCPROJ_SFX) gtest.$(VCPROJ_SFX)
+test_libvpx.$(VCPROJ_SFX): $(LIBVPX_TEST_SRCS) vpx.$(VCPROJ_SFX) gtest.$(VCPROJ_SFX)
 	@echo "    [CREATE] $@"
 	$(qexec)$(GEN_VCPROJ) \
             --exe \
@@ -417,7 +417,7 @@ test_libvpx2.$(VCPROJ_SFX): $(LIBVPX_TEST_SRCS) vpx.$(VCPROJ_SFX) gtest.$(VCPROJ
             -I. -I"$(SRC_PATH_BARE)/third_party/googletest/src/include" \
             -L. -l$(CODEC_LIB) -l$(GTEST_LIB) $^
 
-PROJECTS-$(CONFIG_MSVS) += test_libvpx2.$(VCPROJ_SFX)
+PROJECTS-$(CONFIG_MSVS) += test_libvpx.$(VCPROJ_SFX)
 
 LIBVPX_TEST_BINS := $(addprefix $(TGT_OS:win64=x64)/Release/,$(notdir $(LIBVPX_TEST_BINS)))
 endif
@@ -442,7 +442,7 @@ $(LIBVPX_TEST_OBJS) $(LIBVPX_TEST_OBJS:.o=.d): CXXFLAGS += -I$(SRC_PATH_BARE)/th
 OBJS-$(BUILD_LIBVPX) += $(LIBVPX_TEST_OBJS)
 BINS-$(BUILD_LIBVPX) += $(LIBVPX_TEST_BINS)
 
-CODEC_LIB=$(if $(CONFIG_DEBUG_LIBS),vpx2_g,vpx2)
+CODEC_LIB=$(if $(CONFIG_DEBUG_LIBS),vpx_g,vpx)
 CODEC_LIB_SUF=$(if $(CONFIG_SHARED),.so,.a)
 $(foreach bin,$(LIBVPX_TEST_BINS),\
     $(if $(BUILD_LIBVPX),$(eval $(bin): \

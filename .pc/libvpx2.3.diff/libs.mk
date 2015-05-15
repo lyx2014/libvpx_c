@@ -298,7 +298,7 @@ vpx.pc: config.mk libs.mk
 	$(qexec)echo 'Version: $(VERSION_MAJOR).$(VERSION_MINOR).$(VERSION_PATCH)' >> $@
 	$(qexec)echo 'Requires:' >> $@
 	$(qexec)echo 'Conflicts:' >> $@
-	$(qexec)echo 'Libs: -L$${libdir} -lvpx2 -lm' >> $@
+	$(qexec)echo 'Libs: -L$${libdir} -lvpx -lm' >> $@
 ifeq ($(HAVE_PTHREAD_H),yes)
 	$(qexec)echo 'Libs.private: -lm -lpthread' >> $@
 else
@@ -449,7 +449,7 @@ $(foreach bin,$(LIBVPX_TEST_BINS),\
         lib$(CODEC_LIB)$(CODEC_LIB_SUF) libgtest.a ))\
     $(if $(BUILD_LIBVPX),$(eval $(call linkerxx_template,$(bin),\
         $(LIBVPX_TEST_OBJS) \
-        -L. -lvpx2 -lgtest $(extralibs) -lm)\
+        -L. -lvpx -lgtest $(extralibs) -lm)\
         )))\
     $(if $(LIPO_LIBS),$(eval $(call lipo_bin_template,$(bin))))\
 
