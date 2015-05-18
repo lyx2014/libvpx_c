@@ -160,6 +160,7 @@ endif
 	ls -halt debian/libvpx2-dev/usr/lib/$(DEB_HOST_MULTIARCH)/
 	mv debian/libvpx2-dev/usr/lib/pkgconfig/vpx.pc debian/libvpx2-dev/usr/lib/pkgconfig/vpx2.pc
 	perl -pi -e 's/vpx/vpx2/' debian/libvpx2-dev/usr/lib/pkgconfig/vpx2.pc
+	perl -pi -e 's/vpx22/vpx2/' debian/libvpx2-dev/usr/lib/pkgconfig/vpx2.pc
 	perl -pi -e 's/\/include/\/include\/vpx2/'  debian/libvpx2-dev/usr/lib/pkgconfig/vpx2.pc
 	cat debian/libvpx2-dev/usr/lib/pkgconfig/vpx2.pc
 	dh_installdocs -s -A README AUTHORS
