@@ -1,14 +1,15 @@
 #!/bin/bash
 ORIGDIR=`pwd`
-TMPDIR=libvpx.$$
+TMPDIR=libvpx2.$$
+VPX=libvpx2-2.0.0
 
 mkdir -p ../${TMPDIR}
 
 cd ..
-cp -a libvpx ${TMPDIR}/libvpx-1.4.0
+cp -a libvpx ${TMPDIR}/${VPX}
 cd ${TMPDIR}
-rm -rf libvpx-1.4.0/.git*
-tar zcvf libvpx-1.4.0.tar.gz libvpx-1.4.0
-mv libvpx-1.4.0.tar.gz ${ORIGDIR}/.
+rm -rf ${VPX}/.git*
+tar zcvf ${VPX}.tar.gz ${VPX}
+mv ${VPX}.tar.gz ${ORIGDIR}/.
 cd ${ORIGDIR}
 rm -rf ../${TMPDIR}

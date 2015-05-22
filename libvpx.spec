@@ -1,12 +1,12 @@
-%global majorver 1
-%global minorver 4
+%global majorver 2
+%global minorver 0
 %global tinyver  0
 
-Name:			libvpx
+Name:			libvpx2
 Summary:		VP8 Video Codec SDK
 Version:		%{majorver}.%{minorver}.%{tinyver}
 %global soversion	%{version}
-Release:		6%{?dist}
+Release:		1%{?dist}
 License:		BSD
 Group:			System Environment/Libraries
 Source0:		http://webm.googlecode.com/files/%{name}-%{version}.tar.gz
@@ -20,18 +20,18 @@ BuildRequires:		yasm
 BuildRequires:		doxygen, php-cli
 
 %description
-libvpx provides the VP8 SDK, which allows you to integrate your applications 
+libvpx2 provides the VP8 SDK, which allows you to integrate your applications 
 with the VP8 video codec, a high quality, royalty free, open source codec 
 deployed on millions of computers and devices worldwide. 
 
 %package devel
-Summary:		Development files for libvpx
+Summary:		Development files for %{name}
 Group:			Development/Libraries
 Requires:		%{name}%{?_isa} = %{version}-%{release}
 
 %description devel
 Development libraries and headers for developing software against 
-libvpx.
+libvpx2.
 
 %package utils
 Summary:		VP8 utilities and tools
@@ -143,6 +143,23 @@ ln -sf libvpx.so.%{soversion} libvpx.so.%{majorver}.%{minorver}
 popd
 %endif
 
+# rename libs / include dir to vpx2
+mkdir -p %{buildroot}/%{_includedir}/vpx2
+mv %{buildroot}/%{_includedir}/vpx %{buildroot}/%{_includedir}/vpx2
+pushd %{buildroot}%{_libdir}
+mv libvpx.so.%{soversion} libvpx2.so.%{soversion}
+rm libvpx.so
+rm libvpx.so.%{majorver}
+rm libvpx.so.%{majorver}.%{minorver}
+ln -sf libvpx2.so.%{soversion} libvpx2.so
+ln -sf libvpx2.so.%{soversion} libvpx2.so.%{majorver}
+ln -sf libvpx2.so.%{soversion} libvpx2.so.%{majorver}.%{minorver}
+mv pkgconfig/vpx.pc pkgconfig/vpx2.pc
+perl -pi -e 's/vpx/vpx2/' pkgconfig/vpx2.pc
+perl -pi -e 's/vpx22/vpx2/' pkgconfig/vpx2.pc
+perl -pi -e 's/\/include/\/include\/vpx2/' pkgconfig/vpx2.pc
+popd
+
 pushd %{buildroot}
 # Stuff we don't need.
 rm -rf usr/build/ usr/md5sums.txt usr/lib*/*.a usr/CHANGELOG usr/README
@@ -160,19 +177,23 @@ popd
 
 %files
 %doc AUTHORS CHANGELOG LICENSE README
-%{_libdir}/libvpx.so.*
+%{_libdir}/libvpx2.so.*
 
 %files devel
 # These are SDK docs, not really useful to an end-user.
 #%doc docs/html/
-%{_includedir}/vpx/
-%{_libdir}/pkgconfig/vpx.pc
-%{_libdir}/libvpx.so
+%{_includedir}/vpx2
+%{_libdir}/pkgconfig/vpx2.pc
+%{_libdir}/libvpx2.so
 
 %files utils
 %{_bindir}/*
 
 %changelog
+* Fri May 22 2015 Chris Rienzo <chris.rienzo@citrix.com> - 2.0.0-1
+- Built for FreeSWITCH depedencies
+- Rename to libvpx2 to prevent conflict with CentOS 7 libvpx
+
 * Sun Aug 17 2014 Fedora Release Engineering <rel-eng@lists.fedoraproject.org> - 1.3.0-6
 - Rebuilt for https://fedoraproject.org/wiki/Fedora_21_22_Mass_Rebuild
 
