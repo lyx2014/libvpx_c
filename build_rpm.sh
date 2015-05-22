@@ -5,7 +5,7 @@ cd ..
 
 cp ${ORIGDIR}/*.spec rpmbuild/SPECS/.
 cp ${ORIGDIR}/*.gz rpmbuild/SOURCES/.
-cp ${ORIGDIR}/libvpx.ver rpmbuild/SOURCES/.
+#cp ${ORIGDIR}/libvpx.ver rpmbuild/SOURCES/.
 
 rpmbuild --define "_topdir %(pwd)/rpmbuild" \
   --define "_rpmdir %{_topdir}" \
