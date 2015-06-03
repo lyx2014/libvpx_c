@@ -15,7 +15,7 @@ Source0:		http://webm.googlecode.com/files/%{name}-%{version}.tar.gz
 #Patch0:			Bug-fix-in-ssse3-quantize-function.patch
 URL:			http://www.webmproject.org/tools/vp8-sdk/
 %ifarch %{ix86} x86_64
-BuildRequires:		yasm
+BuildRequires:		nasm
 %endif
 BuildRequires:		doxygen, php-cli
 
