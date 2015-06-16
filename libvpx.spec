@@ -15,9 +15,10 @@ Source0:		http://webm.googlecode.com/files/%{name}-%{version}.tar.gz
 #Patch0:			Bug-fix-in-ssse3-quantize-function.patch
 URL:			http://www.webmproject.org/tools/vp8-sdk/
 %ifarch %{ix86} x86_64
-BuildRequires:		yasm
+BuildRequires:		nasm
 %endif
 BuildRequires:		doxygen, php-cli
+Provides:		libvpx
 
 %description
 libvpx2 provides the VP8 SDK, which allows you to integrate your applications 
@@ -28,6 +29,7 @@ deployed on millions of computers and devices worldwide.
 Summary:		Development files for %{name}
 Group:			Development/Libraries
 Requires:		%{name}%{?_isa} = %{version}-%{release}
+Provides:		libvpx-devel
 
 %description devel
 Development libraries and headers for developing software against 
